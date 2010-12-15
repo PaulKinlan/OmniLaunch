@@ -1,10 +1,10 @@
 {
     "name": "Omni Launch",
     "description": "Launches apps, the quick way!",
-    "version": "0.0.0.1",
+    "version": "0.0.0.2",
     "background_page": "background.html",
     "permissions" : ["management"],
-    "omnibox": { "keyword" : "apps" },
+    "omnibox": { "keyword" : "go" },
     "icons" : {
       "16" : "go.png"
     }

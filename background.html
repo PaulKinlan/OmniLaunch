@@ -5,10 +5,6 @@
       /*
        We only want to monitor updates to apps so the only known way to do this 
        at the moment is to listen as apps are uninstalled and then re-installed
-       
-       On oninstall checks the version number and if it is has a version number 
-       different from the one recorded at the start of the extension then it 
-       is considered an update
        */
        
       var apps = {};
@@ -34,45 +30,73 @@
       
       var inputChanged = function(text, suggestionsCallback) {
         
+        if(text == "") {
+          return;
+        }
+        
         var suggestions = [];
+        var textlc = text.toLowerCase();
+        var re = new RegExp("("+text+")","ig");
         
         for(var a in apps) {
           var app = apps[a];
-          if(app.name.toLowerCase().indexOf(text.toLowerCase()) > -1) {
+          var name = app.name.toLowerCase();
+          var idx = name.indexOf(textlc);
+          if(idx > -1) {
             var content = app.name;
             var description = (app.description == "") ? " " : app.description;
+            
+            var matchStyle = chrome.omnibox.styleMatch(idx, text.length);
+            //var style = description.replace(re, "<url>$1</url>");
+            
             suggestions.push( 
               {
                 "content": content,
-                "description" : description
+                "description" : content + " - " + description,
+                "descriptionStyles" : [
+                  matchStyle
+                ]
               }
-            );
+            ); 
+            
+            /*suggestions.push( 
+              {
+                "content": content,
+                "description" : "View in Webstore - " + description
+                
+              }
+            );*/
           }
         }
-        
+  
         suggestionsCallback(suggestions);
       };
       
       var inputEntered = function(text) {
         
-        var suggestions = [];
+        var appsList = [];
+        var defaultApp = null;
+        
+        if(text == "") {
+          return;
+        }
         
         for(var a in apps) {
           var app = apps[a];
+          
           if(app.name.toLowerCase() == text.toLowerCase()) {
-            
-            chrome.management.launchApp(app.id);
-                        
+            chrome.management.launchApp(app.id);            
             return;
           }
+          
         }
-        
       };
       
       chrome.management.onInstalled.addListener(onInstall);
       chrome.management.getAll(getAllCallback);
       chrome.omnibox.onInputChanged.addListener(inputChanged);
       chrome.omnibox.onInputEntered.addListener(inputEntered);
+      
     </script>
   </head>
   <body>
