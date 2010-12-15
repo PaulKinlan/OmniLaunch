@@ -1,0 +1,80 @@
+<html>
+  <head>
+    <script>
+    
+      /*
+       We only want to monitor updates to apps so the only known way to do this 
+       at the moment is to listen as apps are uninstalled and then re-installed
+       
+       On oninstall checks the version number and if it is has a version number 
+       different from the one recorded at the start of the extension then it 
+       is considered an update
+       */
+       
+      var apps = {};
+      
+      var onInstall = function(ext) {
+        if(ext.isApp) {
+          apps[ext.name] = ext; 
+        }
+      };
+      
+      /*
+        Track all the version numbers
+      */
+      var getAllCallback = function(exts) {
+        for(var i in exts) {
+          var ext = exts[i];
+          
+          if(ext.isApp) {
+            apps[ext.id] = ext;
+          }
+        }
+      };
+      
+      var inputChanged = function(text, suggestionsCallback) {
+        
+        var suggestions = [];
+        
+        for(var a in apps) {
+          var app = apps[a];
+          if(app.name.toLowerCase().indexOf(text.toLowerCase()) > -1) {
+            var content = app.name;
+            var description = (app.description == "") ? " " : app.description;
+            suggestions.push( 
+              {
+                "content": content,
+                "description" : description
+              }
+            );
+          }
+        }
+        
+        suggestionsCallback(suggestions);
+      };
+      
+      var inputEntered = function(text) {
+        
+        var suggestions = [];
+        
+        for(var a in apps) {
+          var app = apps[a];
+          if(app.name.toLowerCase() == text.toLowerCase()) {
+            
+            chrome.management.launchApp(app.id);
+                        
+            return;
+          }
+        }
+        
+      };
+      
+      chrome.management.onInstalled.addListener(onInstall);
+      chrome.management.getAll(getAllCallback);
+      chrome.omnibox.onInputChanged.addListener(inputChanged);
+      chrome.omnibox.onInputEntered.addListener(inputEntered);
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
