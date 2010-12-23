@@ -63,14 +63,15 @@
               var style = [];
               style.push(content.substring(0, idx))
               style.push('<match>');
-              style.push(content.substring(idx, content.length));
+              style.push(content.substring(idx, idx+textlc.length));
               style.push('</match>');
+              style.push(content.substring(idx+textlc.length));
               
               content = style.join("");
               
               suggestions.push( 
                 {
-                  "content": content,
+                  "content": app.name,
                   "description" : content + " - " + description
                 }
               );
