@@ -46,18 +46,35 @@
             var content = app.name;
             var description = (app.description == "") ? " " : app.description;
             
-            var matchStyle = chrome.omnibox.styleMatch(idx, text.length);
-            //var style = description.replace(re, "<url>$1</url>");
+            if(chrome.omnibox.styleMatch) {            
+              var matchStyle = chrome.omnibox.styleMatch(idx, text.length);
             
-            suggestions.push( 
-              {
-                "content": content,
-                "description" : content + " - " + description,
-                "descriptionStyles" : [
-                  matchStyle
-                ]
-              }
-            ); 
+              suggestions.push( 
+                {
+                  "content": content,
+                  "description" : content + " - " + description,
+                  "descriptionStyles" : [
+                    matchStyle
+                  ]
+                }
+              ); 
+            }
+            else {
+              var style = [];
+              style.push(content.substring(0, idx))
+              style.push('<match>');
+              style.push(content.substring(idx, content.length));
+              style.push('</match>');
+              
+              content = style.join("");
+              
+              suggestions.push( 
+                {
+                  "content": content,
+                  "description" : content + " - " + description
+                }
+              );
+            }
             
             /*suggestions.push( 
               {
