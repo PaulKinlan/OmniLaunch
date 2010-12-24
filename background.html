@@ -8,6 +8,7 @@
        */
        
       var apps = {};
+      var selected;
       
       var onInstall = function(ext) {
         if(ext.isApp) {
@@ -37,13 +38,21 @@
         var suggestions = [];
         var textlc = text.toLowerCase();
         var re = new RegExp("("+text+")","ig");
+        var first = true;
         
         for(var a in apps) {
           var app = apps[a];
+              
           var name = app.name.toLowerCase();
           var idx = name.indexOf(textlc);
           if(idx > -1) {
             var content = app.name;
+            
+            if(first) {
+              selected = app;
+              first = false;
+            }
+            
             var description = (app.description == "") ? " " : app.description;
             
             if(chrome.omnibox.styleMatch) {            
@@ -86,6 +95,12 @@
             );*/
           }
         }
+        
+        if(suggestions.length > 0) {
+          chrome.omnibox.setDefaultSuggestion(
+            { description: suggestions[0].description });
+          suggestions.shift();
+        }
   
         suggestionsCallback(suggestions);
       };
@@ -106,9 +121,13 @@
             chrome.management.launchApp(app.id);            
             return;
           }
-          
         }
+        
+        // Couldn't find an exact match so launch the default element
+        chrome.management.launchApp(selected.id);  
+        
       };
+      
       
       chrome.management.onInstalled.addListener(onInstall);
       chrome.management.getAll(getAllCallback);
